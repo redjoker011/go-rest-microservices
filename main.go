@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"online-cafe/handlers"
 	"os"
 	"os/signal"
 	"time"
@@ -11,8 +12,12 @@ import (
 
 func main() {
 	logger := log.New(os.Stdout, "products-api", log.LstdFlags)
+	// Initialize Handlers
+	np := handlers.NewProducts(logger)
+
 	// Initialize new servemux and bind handlers
 	sm := http.NewServeMux()
+	sm.Handle("/", np)
 
 	server := &http.Server{
 		Addr:              ":9090",
