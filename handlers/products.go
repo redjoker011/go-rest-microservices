@@ -4,8 +4,9 @@ import (
 	"log"
 	"net/http"
 	"online-cafe/data"
-	"regexp"
 	"strconv"
+
+	"github.com/gorilla/mux"
 )
 
 type Products struct {
@@ -17,56 +18,7 @@ func NewProducts(l *log.Logger) *Products {
 }
 
 // Respond based on HTTP Method
-func (p *Products) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodGet {
-		p.getProducts(rw, r)
-		return
-	}
-
-	if r.Method == http.MethodPost {
-		p.addProduct(rw, r)
-		return
-	}
-
-	if r.Method == http.MethodPut {
-		// expect product id in URI
-		reg := regexp.MustCompile(`/([0-9]+)`)
-		g := reg.FindAllStringSubmatch(r.URL.Path, -1)
-
-		// Prevent from having multiple matches
-		if len(g) != 1 {
-			http.Error(rw, "Invalid URI", http.StatusBadRequest)
-			return
-		}
-
-		// Prevent from having multiple id parameter for nested resource
-		// /1 - good
-		// /1/2 - bad
-		if len(g[0]) != 2 {
-			p.l.Println("reg", g)
-			http.Error(rw, "Invalid URI", http.StatusBadRequest)
-			return
-		}
-
-		// Assign last match into a variable
-		idString := g[0][1]
-		// Convert string into integer
-		id, err := strconv.Atoi(idString)
-		if err != nil {
-			http.Error(rw, "Invalid URI", http.StatusBadRequest)
-			return
-		}
-
-		// Update Product based on ID parameter
-		p.updateProduct(id, rw, r)
-		return
-	}
-
-	// Raise error for unsupported HTTP Method
-	rw.WriteHeader(http.StatusMethodNotAllowed)
-}
-
-func (p *Products) getProducts(rw http.ResponseWriter, r *http.Request) {
+func (p *Products) GetProducts(rw http.ResponseWriter, r *http.Request) {
 	// Get products
 	lp := data.GetProducts()
 	// Convert struct into JSON and write into ResponseWriter
@@ -76,7 +28,7 @@ func (p *Products) getProducts(rw http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (p *Products) addProduct(rw http.ResponseWriter, r *http.Request) {
+func (p *Products) AddProduct(rw http.ResponseWriter, r *http.Request) {
 	p.l.Println("Handle POST Product")
 	// Get parameters and convert into Product Object
 	prod := &data.Product{}
@@ -89,12 +41,20 @@ func (p *Products) addProduct(rw http.ResponseWriter, r *http.Request) {
 	data.AddProduct(prod)
 }
 
-func (p *Products) updateProduct(id int, rw http.ResponseWriter, r *http.Request) {
-	p.l.Println("Handle PUT Product")
+func (p *Products) UpdateProduct(rw http.ResponseWriter, r *http.Request) {
+	// Fetch parameters from URL
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+
+	if err != nil {
+		http.Error(rw, "Missing id parameter", http.StatusBadRequest)
+	}
+
+	p.l.Println("Handle PUT Product", id)
 	// Get parameters and convert into Product Object
 
 	prod := &data.Product{}
-	err := prod.FromJSON(r.Body)
+	err = prod.FromJSON(r.Body)
 
 	if err != nil {
 		http.Error(rw, "Unable to unmarshal json", http.StatusBadRequest)
