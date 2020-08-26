@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -21,7 +22,7 @@ func NewProducts(l *log.Logger) *Products {
 // Respond based on HTTP Method
 func (p *Products) GetProducts(rw http.ResponseWriter, r *http.Request) {
 	// Get products
-	lp := data.GetProducts
+	lp := data.GetProducts()
 	// Convert struct into JSON and write into ResponseWriter
 	err := lp.ToJSON(rw)
 	if err != nil {
@@ -75,6 +76,17 @@ func (p *Products) MiddlewareProductValidation(next http.Handler) http.Handler {
 		err := prod.FromJSON(r.Body)
 		if err != nil {
 			http.Error(rw, "Unable to marshal json", http.StatusBadRequest)
+			return
+		}
+
+		err = prod.Validate()
+
+		if err != nil {
+			http.Error(
+				rw,
+				fmt.Sprintf("Error validating product: %s", err),
+				http.StatusBadRequest,
+			)
 			return
 		}
 
