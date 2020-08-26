@@ -1,4 +1,4 @@
-module online-cafe
+module github.com/redjoker011/online-cafe
 
 go 1.13
 

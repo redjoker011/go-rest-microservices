@@ -4,12 +4,12 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"online-cafe/handlers"
 	"os"
 	"os/signal"
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/redjoker011/online-cafe/handlers"
 )
 
 func main() {

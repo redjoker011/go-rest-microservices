@@ -4,10 +4,10 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"online-cafe/data"
 	"strconv"
 
 	"github.com/gorilla/mux"
+	"github.com/redjoker011/online-cafe/data"
 )
 
 type Products struct {
@@ -21,7 +21,7 @@ func NewProducts(l *log.Logger) *Products {
 // Respond based on HTTP Method
 func (p *Products) GetProducts(rw http.ResponseWriter, r *http.Request) {
 	// Get products
-	lp := data.GetProducts()
+	lp := data.GetProducts
 	// Convert struct into JSON and write into ResponseWriter
 	err := lp.ToJSON(rw)
 	if err != nil {
