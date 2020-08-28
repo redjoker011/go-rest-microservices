@@ -1,3 +1,17 @@
+// Package Classification of Products API
+//
+// Documentation for Product API
+//
+// Schemes: HTTP
+// BasePath: /
+// Version: 1.0.0
+//
+// Consumes:
+// - application/json
+//
+// Produces:
+// - appication/json
+// swagger:meta
 package handlers
 
 import (
@@ -11,6 +25,26 @@ import (
 	"github.com/redjoker011/online-cafe/data"
 )
 
+// A List of Products
+// swagger:response productsResponse
+type productsResponseWrapper struct {
+	// All Products in the system
+	// in: body
+	Body []data.Product
+}
+
+// swagger:parameters updateProduct
+type productIDParameterWrapper struct {
+	// The ID of the product to delete from the database
+	// in: path
+	// required: true
+	ID int `json:"id"`
+}
+
+// swagger:response noContent
+type productsNoContent struct {
+}
+
 type Products struct {
 	l *log.Logger
 }
@@ -18,6 +52,11 @@ type Products struct {
 func NewProducts(l *log.Logger) *Products {
 	return &Products{l}
 }
+
+// swagger:route GET /products products listProducts
+// Returns List of Products
+// responses:
+// 200:productsResponse
 
 // Respond based on HTTP Method
 func (p *Products) GetProducts(rw http.ResponseWriter, r *http.Request) {
@@ -41,6 +80,11 @@ func (p *Products) AddProduct(rw http.ResponseWriter, r *http.Request) {
 	data.AddProduct(&prod)
 }
 
+// swagger:route PUT /products{id} products updateProduct
+// responses:
+// 200: noContent
+
+// UpdateProduct update a product from the data store
 func (p *Products) UpdateProduct(rw http.ResponseWriter, r *http.Request) {
 	// Fetch parameters from URL
 	vars := mux.Vars(r)

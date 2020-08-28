@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/go-openapi/runtime/middleware"
 	"github.com/gorilla/mux"
 	"github.com/redjoker011/online-cafe/handlers"
 )
@@ -30,6 +31,13 @@ func main() {
 	postRouter := sm.Methods(http.MethodPost).Subrouter()
 	postRouter.HandleFunc("/products", np.AddProduct)
 	postRouter.Use(np.MiddlewareProductValidation)
+
+	// Go Open API Runtime to generate Redoc Client
+	opts := middleware.RedocOpts{SpecURL: "/swagger.yml"}
+	sh := middleware.Redoc(opts, nil)
+	// Swagger Handler
+	getRouter.Handle("/docs", sh)
+	getRouter.Handle("/swagger.yml", http.FileServer(http.Dir("./")))
 
 	server := &http.Server{
 		Addr:              ":9090",

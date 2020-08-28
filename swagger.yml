@@ -1,0 +1,73 @@
+basePath: /
+consumes:
+- application/json
+definitions:
+  Product:
+    description: Product defines the structure of an API product
+    properties:
+      description:
+        type: string
+        x-go-name: Description
+      id:
+        description: |-
+          The id for this product
+
+          require: true
+        format: int64
+        type: integer
+        x-go-name: ID
+      name:
+        type: string
+        x-go-name: Name
+      price:
+        format: float
+        type: number
+        x-go-name: Price
+      sku:
+        type: string
+        x-go-name: SKU
+    type: object
+    x-go-package: github.com/redjoker011/online-cafe/data
+info:
+  description: Documentation for Product API
+  title: of Products API
+  version: 1.0.0
+paths:
+  /products:
+    get:
+      description: Returns List of Products
+      operationId: listProducts
+      responses:
+        "200":
+          $ref: '#/responses/productsResponse'
+      tags:
+      - products
+  /products{id}:
+    put:
+      operationId: updateProduct
+      parameters:
+      - description: The ID of the product to delete from the database
+        format: int64
+        in: path
+        name: id
+        required: true
+        type: integer
+        x-go-name: ID
+      responses:
+        "200":
+          $ref: '#/responses/noContent'
+      tags:
+      - products
+produces:
+- appication/json
+responses:
+  noContent: {}
+  productsResponse:
+    description: A List of Products
+    schema:
+      items:
+        $ref: '#/definitions/Product'
+      type: array
+schemes:
+- HTTP
+swagger: "2.0"
