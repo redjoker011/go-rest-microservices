@@ -59,9 +59,10 @@ paths:
       tags:
       - products
 produces:
-- appication/json
+- application/json
 responses:
-  noContent: {}
+  noContent:
+    description: No content is returned by this API endpoint
   productsResponse:
     description: A List of Products
     schema:
@@ -69,5 +70,5 @@ responses:
         $ref: '#/definitions/Product'
       type: array
 schemes:
-- HTTP
+- http
 swagger: "2.0"

@@ -2,7 +2,7 @@
 //
 // Documentation for Product API
 //
-// Schemes: HTTP
+// Schemes: http
 // BasePath: /
 // Version: 1.0.0
 //
@@ -10,7 +10,7 @@
 // - application/json
 //
 // Produces:
-// - appication/json
+// - application/json
 // swagger:meta
 package handlers
 
@@ -41,6 +41,7 @@ type productIDParameterWrapper struct {
 	ID int `json:"id"`
 }
 
+// No content is returned by this API endpoint
 // swagger:response noContent
 type productsNoContent struct {
 }
@@ -62,6 +63,7 @@ func NewProducts(l *log.Logger) *Products {
 func (p *Products) GetProducts(rw http.ResponseWriter, r *http.Request) {
 	// Get products
 	lp := data.GetProducts()
+	rw.Header().Add("Content-Type", "application/json")
 	// Convert struct into JSON and write into ResponseWriter
 	err := lp.ToJSON(rw)
 	if err != nil {
