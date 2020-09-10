@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/go-openapi/runtime/middleware"
+	gorillaHandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/redjoker011/online-cafe/handlers"
 )
@@ -39,9 +40,14 @@ func main() {
 	getRouter.Handle("/docs", sh)
 	getRouter.Handle("/swagger.yml", http.FileServer(http.Dir("./")))
 
+	// CORS
+	// Whitelist consumer URL's
+	urls := []string{"http:localhost:8080"}
+	ch := gorillaHandlers.CORS(gorillaHandlers.AllowedOrigins(urls))
+
 	server := &http.Server{
 		Addr:              ":9090",
-		Handler:           sm,
+		Handler:           ch(sm), // Use servemux as cors handler argument
 		IdleTimeout:       120 * time.Second,
 		ReadHeaderTimeout: 1 * time.Second,
 		WriteTimeout:      1 * time.Second,
