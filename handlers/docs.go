@@ -36,3 +36,19 @@ type productIDParameterWrapper struct {
 // swagger:response noContent
 type productsNoContent struct {
 }
+
+// Generic error message returned as a string
+// swagger:response errorResponse
+type errorResponseWrapper struct {
+	// Error Message
+	// in: Body
+	Body GenericError
+}
+
+// Validation error messages
+// swagger:response validationResponse
+type validationResponseWrappper struct {
+	// Collection of error messages
+	// in: Body
+	Body ValidationError
+}

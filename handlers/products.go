@@ -19,32 +19,17 @@ func NewProducts(l *log.Logger) *Products {
 	return &Products{l}
 }
 
-// swagger:route GET /products products listProducts
-// Returns List of Products
-// responses:
-// 200:productsResponse
-
-// Respond based on HTTP Method
-func (p *Products) GetProducts(rw http.ResponseWriter, r *http.Request) {
-	// Get products
-	lp := data.GetProducts()
-	rw.Header().Add("Content-Type", "application/json")
-	// Convert struct into JSON and write into ResponseWriter
-	err := lp.ToJSON(rw)
-	if err != nil {
-		http.Error(rw, "Unable to marshal json", http.StatusInternalServerError)
-	}
-}
-
 // Create empty struct which act as request context key identifier
 type KeyProduct struct{}
 
-func (p *Products) AddProduct(rw http.ResponseWriter, r *http.Request) {
-	p.l.Println("Handle POST Product")
-	// Fetch Product Object from request context
-	prod := r.Context().Value(KeyProduct{}).(data.Product)
+// Generic Error response from server
+type GenericError struct {
+	Message string `json:"message"`
+}
 
-	data.AddProduct(&prod)
+// Validation Error
+type ValidationError struct {
+	Nessage []string `json:"messages"`
 }
 
 // swagger:route PUT /products{id} products updateProduct
