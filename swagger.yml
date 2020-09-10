@@ -2,6 +2,14 @@ basePath: /
 consumes:
 - application/json
 definitions:
+  GenericError:
+    description: Generic Error response from server
+    properties:
+      message:
+        type: string
+        x-go-name: Message
+    type: object
+    x-go-package: github.com/redjoker011/online-cafe/handlers
   Product:
     description: Product defines the structure of an API product
     properties:
@@ -28,6 +36,16 @@ definitions:
         x-go-name: SKU
     type: object
     x-go-package: github.com/redjoker011/online-cafe/data
+  ValidationError:
+    description: Validation Error
+    properties:
+      messages:
+        items:
+          type: string
+        type: array
+        x-go-name: Nessage
+    type: object
+    x-go-package: github.com/redjoker011/online-cafe/handlers
 info:
   description: Documentation for Product API
   title: of Products API
@@ -42,6 +60,16 @@ paths:
           $ref: '#/responses/productsResponse'
       tags:
       - products
+    post:
+      description: |-
+        Create a new Product
+        response:
+        200: productsResponse
+        422: errorValidation
+        501: errorResponse
+      operationId: createProduct
+      tags:
+      - products
   /products{id}:
     put:
       operationId: updateProduct
@@ -54,13 +82,26 @@ paths:
         type: integer
         x-go-name: ID
       responses:
-        "200":
+        "201":
           $ref: '#/responses/noContent'
+        "404":
+          $ref: '#/responses/errorResponse'
+        "422":
+          $ref: '#/responses/errorValidation'
       tags:
       - products
 produces:
 - application/json
 responses:
+  errorResponse:
+    description: Generic error message returned as a string
+    headers:
+      Body:
+        description: |-
+          Error Message
+          in: Body
+    schema:
+      $ref: '#/definitions/GenericError'
   noContent:
     description: No content is returned by this API endpoint
   productsResponse:
@@ -69,6 +110,15 @@ responses:
       items:
         $ref: '#/definitions/Product'
       type: array
+  validationResponse:
+    description: Validation error messages
+    headers:
+      Body:
+        description: |-
+          Collection of error messages
+          in: Body
+    schema:
+      $ref: '#/definitions/ValidationError'
 schemes:
 - http
 swagger: "2.0"
