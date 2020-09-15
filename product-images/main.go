@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"time"
 
+	gorillaHandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/hashicorp/go-hclog"
 	"github.com/nicholasjackson/env"
@@ -45,7 +46,8 @@ func main() {
 	// filename regex: {filename:[a-zA-Z]+\\.[a-z]{3}}
 	// problem with FileServer is that it is dumb
 	ph := sm.Methods(http.MethodPost).Subrouter()
-	ph.HandleFunc("/images/{id:[0-9]+}/{filename:[a-zA-Z]+\\.[a-z]{3}}", fh.ServeHTTP)
+	ph.HandleFunc("/images/{id:[0-9]+}/{filename:[a-zA-Z]+\\.[a-z]{3}}", fh.UploadRest)
+	ph.HandleFunc("/", fh.UploadMultipart)
 
 	// get files
 	gh := sm.Methods(http.MethodGet).Subrouter()
@@ -54,9 +56,11 @@ func main() {
 		http.StripPrefix("/images/", http.FileServer(http.Dir(*basePath))),
 	)
 
+	ch := gorillaHandlers.CORS(gorillaHandlers.AllowedOrigins([]string{"http:localhost:8080"}))
+
 	s := http.Server{
 		Addr:         *bindAddress,
-		Handler:      sm,
+		Handler:      ch(sm),
 		ErrorLog:     sl,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 5 * time.Second,
