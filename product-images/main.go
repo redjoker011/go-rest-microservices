@@ -40,6 +40,7 @@ func main() {
 	}
 
 	fh := handlers.NewFiles(store, l)
+	mw := handlers.GzipHandler{}
 
 	sm := mux.NewRouter()
 
@@ -55,6 +56,7 @@ func main() {
 		"/images/{id:[0-9]+}/{filename:[a-zA-Z]+\\.[a-z]{3}}",
 		http.StripPrefix("/images/", http.FileServer(http.Dir(*basePath))),
 	)
+	gh.Use(mw.GzipMiddleware)
 
 	ch := gorillaHandlers.CORS(gorillaHandlers.AllowedOrigins([]string{"http:localhost:8080"}))
 
