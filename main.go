@@ -11,19 +11,31 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 	gorillaHandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	protos "github.com/redjoker011/online-cafe/currency/protos/currency"
 	"github.com/redjoker011/online-cafe/handlers"
+	"google.golang.org/grpc"
 )
 
 func main() {
 	logger := log.New(os.Stdout, "products-api", log.LstdFlags)
+
+	// Create GRPC Client
+	conn, err := grpc.Dial("localhost:9092", grpc.WithInsecure())
+	if err != nil {
+		panic(err)
+	}
+	defer conn.Close()
+	// Currency Client
+	cc := protos.NewCurrencyClient(conn)
 	// Initialize Handlers
-	np := handlers.NewProducts(logger)
+	np := handlers.NewProducts(logger, cc)
 
 	// Initialize new servemux and bind handlers using Gorilla
 	sm := mux.NewRouter()
 	// Initialize a subrouter and filter GET method requests
 	getRouter := sm.Methods(http.MethodGet).Subrouter()
 	getRouter.HandleFunc("/products", np.GetProducts)
+	getRouter.HandleFunc("/product", np.GetProduct)
 
 	putRouter := sm.Methods(http.MethodPut).Subrouter()
 	putRouter.HandleFunc("/products/{id:[0-9]+}", np.UpdateProduct)
