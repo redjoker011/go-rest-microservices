@@ -1,8 +1,9 @@
 package handlers
 
 import (
-	protos "github.com/redjoker011/online-cafe/currency/protos/currency"
 	"log"
+
+	protos "github.com/redjoker011/online-cafe/currency/protos/currency"
 )
 
 type Products struct {

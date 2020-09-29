@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/hashicorp/go-hclog"
+	"github.com/redjoker011/online-cafe/currency/data"
 	protos "github.com/redjoker011/online-cafe/currency/protos/currency"
 	"github.com/redjoker011/online-cafe/currency/server"
 	"google.golang.org/grpc"
@@ -13,10 +14,16 @@ import (
 
 func main() {
 	log := hclog.Default()
+	rates, err := data.NewRates(log)
+
+	if err != nil {
+		log.Error("Unable to generate rates", "error", err)
+	}
+
 	// Initialize new grpc server
 	gs := grpc.NewServer()
 	// Initialize new server instance
-	cs := server.NewCurrency(log)
+	cs := server.NewCurrency(rates, log)
 
 	// Register GRPC Server
 	protos.RegisterCurrencyServer(gs, cs)

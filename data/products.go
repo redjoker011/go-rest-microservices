@@ -1,6 +1,7 @@
 package data
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -8,6 +9,8 @@ import (
 	"time"
 
 	"github.com/go-playground/validator"
+	"github.com/hashicorp/go-hclog"
+	protos "github.com/redjoker011/online-cafe/currency/protos/currency"
 )
 
 // Product defines the structure of an API product
@@ -19,7 +22,7 @@ type Product struct {
 	ID          int     `json:"id"`
 	Name        string  `json:"name" validate:"required"`
 	Description string  `json:"description"`
-	Price       float32 `json:"price" validate:"gt=0"`
+	Price       float64 `json:"price" validate:"gt=0"`
 	SKU         string  `json:"sku" validate:"required,sku"`
 	CreatedOn   string  `json:"-"`
 	UpdatedOn   string  `json:"-"`
@@ -85,9 +88,45 @@ var productList = []*Product{
 	},
 }
 
+type ProductsDB struct {
+	currency protos.CurrencyClient
+	log      hclog.Logger
+}
+
+func NewProductsDB(c protos.CurrencyClient, l hclog.Logger) *ProductsDB {
+	return &ProductsDB{c, l}
+}
+
 // Return Products Data
-func GetProducts() Products {
-	return productList
+func (p *ProductsDB) GetProducts(currency string) (Products, error) {
+	if currency == "" {
+		return productList, nil
+	}
+
+	r, err := p.getRate(currency)
+	if err != nil {
+		p.log.Error("Unable to get rate", "currency", currency, "error", err)
+		return nil, err
+	}
+	products := Products{}
+
+	for _, p := range productList {
+		np := *p
+		np.Price = np.Price * r
+		products = append(products, &np)
+	}
+
+	return products, nil
+}
+
+func (p *ProductsDB) getRate(dest string) (float64, error) {
+	rr := &protos.RateRequest{
+		Base:        protos.Currencies(protos.Currencies_value["EUR"]),
+		Destination: protos.Currencies(protos.Currencies_value["USD"]),
+	}
+	curr, err := p.currency.GetRate(context.Background(), rr)
+
+	return curr.Rate, err
 }
 
 // Add new product into products array
