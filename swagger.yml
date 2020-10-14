@@ -28,7 +28,7 @@ definitions:
         type: string
         x-go-name: Name
       price:
-        format: float
+        format: double
         type: number
         x-go-name: Price
       sku:
@@ -55,6 +55,14 @@ paths:
     get:
       description: Returns List of Products
       operationId: listProducts
+      parameters:
+      - description: |-
+          Currency used when returning the price of the product
+          when not specified currency is returned is USD
+        in: query
+        name: currency
+        type: string
+        x-go-name: Currency
       responses:
         "200":
           $ref: '#/responses/productsResponse'
@@ -87,7 +95,7 @@ paths:
         "404":
           $ref: '#/responses/errorResponse'
         "422":
-          $ref: '#/responses/errorValidation'
+          $ref: '#/responses/validationResponse'
       tags:
       - products
 produces:

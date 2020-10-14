@@ -32,6 +32,15 @@ type productIDParameterWrapper struct {
 	ID int `json:"id"`
 }
 
+// swagger:parameters listProducts
+type productQueryParam struct {
+	// Currency used when returning the price of the product
+	// when not specified currency is returned is USD
+	// in: query
+	// required: false
+	Currency string `json:"currency"`
+}
+
 // No content is returned by this API endpoint
 // swagger:response noContent
 type productsNoContent struct {

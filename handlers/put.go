@@ -12,7 +12,7 @@ import (
 // responses:
 // 201: noContent
 // 404: errorResponse
-// 422: errorValidation
+// 422: validationResponse
 
 // UpdateProduct update a product from the data store
 func (p *Products) UpdateProduct(rw http.ResponseWriter, r *http.Request) {
