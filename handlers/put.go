@@ -24,11 +24,11 @@ func (p *Products) UpdateProduct(rw http.ResponseWriter, r *http.Request) {
 		http.Error(rw, "Missing id parameter", http.StatusBadRequest)
 	}
 
-	p.l.Println("Handle PUT Product", id)
+	p.l.Info("Handle PUT Product", id)
 
 	// Fetch Product Object from request context
 	prod := r.Context().Value(KeyProduct{}).(data.Product)
-	err = data.UpdateProduct(id, &prod)
+	err = p.productDB.UpdateProduct(id, &prod)
 
 	if err == data.ErrProductNotFound {
 		http.Error(rw, "Product not found", http.StatusNotFound)

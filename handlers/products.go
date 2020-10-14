@@ -1,18 +1,17 @@
 package handlers
 
 import (
-	"log"
-
-	protos "github.com/redjoker011/online-cafe/currency/protos/currency"
+	"github.com/hashicorp/go-hclog"
+	"github.com/redjoker011/online-cafe/data"
 )
 
 type Products struct {
-	l  *log.Logger
-	cc protos.CurrencyClient
+	l         hclog.Logger
+	productDB *data.ProductsDB
 }
 
-func NewProducts(l *log.Logger, cc protos.CurrencyClient) *Products {
-	return &Products{l, cc}
+func NewProducts(l hclog.Logger, pdb *data.ProductsDB) *Products {
+	return &Products{l, pdb}
 }
 
 // Create empty struct which act as request context key identifier

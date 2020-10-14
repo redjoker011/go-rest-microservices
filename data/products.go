@@ -130,9 +130,9 @@ func (p *ProductsDB) getRate(dest string) (float64, error) {
 }
 
 // Add new product into products array
-func AddProduct(p *Product) {
-	p.ID = getNextID()
-	productList = append(productList, p)
+func (p *ProductsDB) AddProduct(prod *Product) {
+	prod.ID = getNextID()
+	productList = append(productList, prod)
 }
 
 // Get Last Product ID
@@ -141,7 +141,7 @@ func getNextID() int {
 	return lp.ID + 1
 }
 
-func UpdateProduct(id int, p *Product) error {
+func (p *ProductsDB) UpdateProduct(id int, product *Product) error {
 	prod, pos, err := findProduct(id)
 
 	fmt.Printf("Old Product: %#v \n", prod)
@@ -151,10 +151,10 @@ func UpdateProduct(id int, p *Product) error {
 	}
 
 	// Set product struct ID
-	p.ID = id
-	fmt.Printf("Updated Product: %#v \n", p)
+	product.ID = id
+	p.log.Debug("Updated Product: %#v \n", product)
 	// Get product by index and update value
-	productList[pos] = p
+	productList[pos] = product
 	return nil
 }
 

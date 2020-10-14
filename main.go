@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -11,13 +10,15 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 	gorillaHandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/hashicorp/go-hclog"
 	protos "github.com/redjoker011/online-cafe/currency/protos/currency"
+	"github.com/redjoker011/online-cafe/data"
 	"github.com/redjoker011/online-cafe/handlers"
 	"google.golang.org/grpc"
 )
 
 func main() {
-	logger := log.New(os.Stdout, "products-api", log.LstdFlags)
+	l := hclog.Default()
 
 	// Create GRPC Client
 	conn, err := grpc.Dial("localhost:9092", grpc.WithInsecure())
@@ -27,8 +28,12 @@ func main() {
 	defer conn.Close()
 	// Currency Client
 	cc := protos.NewCurrencyClient(conn)
+
+	// create db instance
+	db := data.NewProductsDB(cc, l)
+
 	// Initialize Handlers
-	np := handlers.NewProducts(logger, cc)
+	np := handlers.NewProducts(l, db)
 
 	// Initialize new servemux and bind handlers using Gorilla
 	sm := mux.NewRouter()
@@ -60,15 +65,19 @@ func main() {
 	server := &http.Server{
 		Addr:              ":9090",
 		Handler:           ch(sm), // Use servemux as cors handler argument
+		ErrorLog:          l.StandardLogger(&hclog.StandardLoggerOptions{}),
 		IdleTimeout:       120 * time.Second,
 		ReadHeaderTimeout: 1 * time.Second,
 		WriteTimeout:      1 * time.Second,
 	}
 
+	l.Info("Starting Server", "port", ":9090")
+
 	go func() {
 		err := server.ListenAndServe()
+
 		if err != nil {
-			logger.Fatal(err)
+			l.Error("Error starting server", "error", err)
 		}
 	}()
 
@@ -81,7 +90,7 @@ func main() {
 	// Add Channel listener
 	sig := <-sigChan
 
-	logger.Println("Received Terminate, gracefully shutting down", sig)
+	l.Info("Received Terminate, gracefully shutting down", sig)
 
 	// Graceful shutdown
 	tc, _ := context.WithTimeout(context.Background(), 30*time.Second)
