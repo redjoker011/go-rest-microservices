@@ -25,7 +25,8 @@ func (c *Currency) GetRate(ctx context.Context, rr *protos.RateRequest) (*protos
 	rate, err := c.rates.GetRate(rr.GetBase().String(), rr.GetDestination().String())
 
 	if err != nil {
-		return nil, err
+		c.log.Error("Unable to convert rate", "base", rr.GetBase(), "destination", rr.GetDestination(), "error", err)
+		return &protos.RateResponse{Rate: 0.0}, err
 	}
 	return &protos.RateResponse{Rate: rate}, nil
 }

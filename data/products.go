@@ -104,12 +104,13 @@ func (p *ProductsDB) GetProducts(currency string) (Products, error) {
 	}
 
 	r, err := p.getRate(currency)
+
 	if err != nil {
 		p.log.Error("Unable to get rate", "currency", currency, "error", err)
 		return nil, err
 	}
-	products := Products{}
 
+	products := Products{}
 	for _, p := range productList {
 		np := *p
 		np.Price = np.Price * r
@@ -121,8 +122,8 @@ func (p *ProductsDB) GetProducts(currency string) (Products, error) {
 
 func (p *ProductsDB) getRate(dest string) (float64, error) {
 	rr := &protos.RateRequest{
-		Base:        protos.Currencies(protos.Currencies_value["EUR"]),
-		Destination: protos.Currencies(protos.Currencies_value["USD"]),
+		Base:        protos.Currencies(protos.Currencies_value["USD"]),
+		Destination: protos.Currencies(protos.Currencies_value[dest]),
 	}
 	curr, err := p.currency.GetRate(context.Background(), rr)
 

@@ -39,7 +39,7 @@ func main() {
 	sm := mux.NewRouter()
 	// Initialize a subrouter and filter GET method requests
 	getRouter := sm.Methods(http.MethodGet).Subrouter()
-	getRouter.HandleFunc("/products", np.GetProducts)
+	getRouter.HandleFunc("/products", np.GetProducts).Queries("currency", "{[A-Z]{3}}")
 	getRouter.HandleFunc("/product", np.GetProduct)
 
 	putRouter := sm.Methods(http.MethodPut).Subrouter()

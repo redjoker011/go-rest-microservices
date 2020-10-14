@@ -16,8 +16,11 @@ import (
 
 // Respond based on HTTP Method
 func (p *Products) GetProducts(rw http.ResponseWriter, r *http.Request) {
+	// Get Currency from query parameter
+	curr := r.URL.Query().Get("currency")
+
 	// Get products
-	lp, err := p.productDB.GetProducts("")
+	lp, err := p.productDB.GetProducts(curr)
 
 	if err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
