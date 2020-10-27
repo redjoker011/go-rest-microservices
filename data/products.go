@@ -93,10 +93,15 @@ var productList = []*Product{
 type ProductsDB struct {
 	currency protos.CurrencyClient
 	log      hclog.Logger
+	client   protos.Currency_SubscribeRatesClient
 }
 
 func NewProductsDB(c protos.CurrencyClient, l hclog.Logger) *ProductsDB {
-	return &ProductsDB{c, l}
+	pb := &ProductsDB{c, l, nil}
+
+	go pb.handleUpdates()
+
+	return pb
 }
 
 // Return Products Data
@@ -142,6 +147,54 @@ func (p *ProductsDB) getRate(dest string) (float64, error) {
 	}
 
 	return curr.Rate, err
+}
+
+func (p *ProductsDB) handleUpdates() {
+	sub, err := p.currency.SubscribeRates(context.Background())
+	if err != nil {
+		p.log.Error("Unable to subscribe for rates", "error", err)
+		return
+	}
+
+	p.client = sub
+
+	for {
+		// Recv returns a StreamingRateResponse which can contain one of two messages
+		// RateResponse or an Error.
+		// We need to handle each case separately
+		srr, err := sub.Recv()
+
+		// handle connection errors
+		// this is normally terminal requires a reconnect
+		if err != nil {
+			p.log.Error("Error while waiting for message", "error", err)
+			return
+		}
+
+		// handle a returned error message
+		if ge := srr.GetError(); ge != nil {
+			sre := status.FromProto(ge)
+
+			if sre.Code() == codes.InvalidArgument {
+				errDetails := ""
+				// get th RateRequest serialized in the error response
+				// Details is a collection but we are only returning a single item
+				if d := sre.Details(); len(d) > 0 {
+					p.log.Error("Deets", "d", d)
+					if rr, ok := d[0].(*protos.RateRequest); ok {
+						errDetails = fmt.Sprintf("base: %s destination: %s", rr.GetBase().String(), rr.GetDestination().String())
+					}
+				}
+
+				p.log.Error("Received error from currency service rate subscription", "error", ge.GetMessage(), "details", errDetails)
+			}
+		}
+
+		// handle a rate response
+		if rr := srr.GetRateResponse(); rr != nil {
+			p.log.Info("Recieved updated rate from server")
+		}
+	}
 }
 
 // Add new product into products array
