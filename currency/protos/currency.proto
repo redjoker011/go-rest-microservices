@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+import "google/rpc/status.proto";
+
 service Currency {
   // GetRate returns the exchange rate between currencies
   rpc GetRate(RateRequest) returns (RateResponse);
@@ -15,6 +17,13 @@ message RateRequest {
 
 message RateResponse {
   double Rate = 1;
+}
+
+message StreamingRateResponse {
+  oneof message {
+    RateResponse rate_response = 1;
+    google.rpc.Status error = 2;
+  }
 }
 
 // Currencies is an enum which represents the allowed currencies for the API
